@@ -137,19 +137,18 @@ class CursorAPIClient:
             members = self.get_team_members()
             return {
                 'id': self.org_id or 'team',
-                'name': 'Your Cursor Team',
+                'name': 'Amagi Media Labs',
                 'plan': 'business',
                 'created_at': '2023-01-01T00:00:00Z',
                 'user_count': len(members)
             }
         except Exception as e:
-            logger.warning(f"Failed to fetch org info, using mock data: {e}")
+            logger.warning(f"Failed to get organization info: {e}")
             return {
                 'id': self.org_id or 'team',
-                'name': 'Your Cursor Team',
-                'plan': 'business',
-                'created_at': '2023-01-01T00:00:00Z',
-                'user_count': 0
+                'name': 'Amagi Media Labs',
+                'plan': 'Unknown',
+                'created_at': '2024-01-01T00:00:00Z'
             }
     
     def get_users(self, limit: int = None, offset: int = 0) -> List[Dict[str, Any]]:

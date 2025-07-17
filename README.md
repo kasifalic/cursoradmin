@@ -1,34 +1,25 @@
-# Cursor Admin Dashboard
+# Amagi Cursor AI Dashboard
 
-A comprehensive admin dashboard for monitoring and analyzing Cursor usage across your organization. Since Cursor doesn't provide native analytics, this tool fills that gap by offering detailed insights into user activity, feature usage, spending patterns, and model utilization.
+A comprehensive analytics dashboard for monitoring Cursor AI usage across your organization. Since Cursor doesn't provide native analytics, this dashboard fills that gap by connecting to Cursor's API to provide detailed insights into user activity, feature usage, and trends.
 
 ## Features
 
-### 📊 Core Analytics
-- **User Overview**: Real user names extracted from email addresses, activity levels, and engagement metrics
-- **Usage Metrics**: Sessions, requests, tokens, and feature-specific usage tracking
-- **Trends Analysis**: Daily and weekly usage patterns with time-series visualizations
-- **Export Functionality**: CSV, JSON, and Excel export capabilities for further analysis
+### Core Analytics
+- **User Activity Monitoring**: Track individual user sessions, requests, and engagement
+- **Feature Usage Analysis**: Understand which Cursor features are most popular
+- **Usage Trends**: Visualize usage patterns over time
+- **Team Analytics**: Get organization-wide insights and metrics
 
-### 💳 Premium Requests Analysis (NEW!)
-- **Request Type Segregation**: Breakdown of Subscription vs Usage-based vs API Key requests
-- **User Premium Usage**: Identify which users are consuming premium (usage-based) requests
-- **Cost Distribution**: Visual analysis of request types and their proportional usage
-- **Top Premium Users**: Rankings of users by premium request consumption
+### Advanced Segregation Features
+- **Premium Requests Analysis**: Segregate Usage-based vs Subscription-included requests
+- **Individual User Spending**: Track per-user costs and token consumption
+- **Model Usage Analytics**: Analyze AI model popularity and costs (GPT-4, Claude, etc.)
 
-### 💸 Individual User Spending (NEW!)
-- **Per-User Cost Analysis**: Detailed spending breakdown by individual team members
-- **Token Cost Tracking**: Input/output tokens and associated costs per user
-- **Spending Distribution**: Histograms and statistics showing spending patterns across the team
-- **Top Spenders Identification**: Clear visibility into which users generate the most costs
-- **Overall Budget Tracking**: Organization-wide spending summaries
-
-### 🤖 Model Usage Analytics (NEW!)
-- **Model Popularity**: Which AI models (GPT-4, Claude, etc.) are most frequently used
-- **User Model Preferences**: Individual user preferences and model switching patterns
-- **Cost per Model**: Financial analysis of different model usage and their associated costs
-- **Performance Metrics**: Model performance indicators including Max Mode usage
-- **Auto vs Manual Selection**: Analysis of model selection patterns
+### Data Export & Visualization
+- Export data in CSV, JSON, and Excel formats
+- Interactive charts and visualizations
+- Real-time data refresh capabilities
+- Comprehensive filtering and search options
 
 ## Architecture
 

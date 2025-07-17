@@ -42,12 +42,17 @@ class Config:
             raise ValueError("CURSOR_API_KEY is required")
         return True
 
-# Dashboard page configuration
+# Streamlit configuration
 DASHBOARD_CONFIG = {
-    'page_title': 'Cursor Admin Dashboard',
+    'page_title': 'Amagi Cursor AI Dashboard',
     'page_icon': '📊',
     'layout': 'wide',
-    'initial_sidebar_state': 'expanded'
+    'initial_sidebar_state': 'expanded',
+    'menu_items': {
+        'Get Help': 'https://github.com/yourusername/cursor-dashboard',
+        'Report a bug': 'https://github.com/yourusername/cursor-dashboard/issues',
+        'About': 'Cursor Admin Dashboard - Analytics for your Cursor usage'
+    }
 }
 
 # Chart color schemes

@@ -557,10 +557,12 @@ class CursorDashboard:
         st.plotly_chart(fig, use_container_width=True)
     
     def render_premium_requests_analysis(self):
-        """Render premium requests segregation analysis"""
-        st.header("💳 Premium Requests Analysis")
+        """Render Premium Requests Analysis section"""
+        st.markdown("---")
+        st.header("💎 Premium Requests Analysis")
         
-        if 'daily_usage_df' in st.session_state and not st.session_state.daily_usage_df.empty:
+        # Check if daily usage data is available and not None
+        if 'daily_usage_df' in st.session_state and st.session_state.daily_usage_df is not None and not st.session_state.daily_usage_df.empty:
             daily_df = st.session_state.daily_usage_df
             
             # Calculate overall breakdown
@@ -612,16 +614,18 @@ class CursorDashboard:
                         title="Top Users by Premium Requests",
                         labels={'value': 'Requests', 'email': 'User'}
                     )
-                    fig_bar.update_xaxis(tickangle=45)
+                    fig_bar.update_layout(xaxis_tickangle=45)
                     st.plotly_chart(fig_bar, use_container_width=True)
         else:
             st.info("No premium requests data available")
     
     def render_individual_spending_analysis(self):
         """Render individual user spending analysis"""
+        st.markdown("---")
         st.header("💸 Individual User Spending")
         
-        if 'usage_events_df' in st.session_state and not st.session_state.usage_events_df.empty:
+        # Check if usage events data is available and not None
+        if 'usage_events_df' in st.session_state and st.session_state.usage_events_df is not None and not st.session_state.usage_events_df.empty:
             events_df = st.session_state.usage_events_df
             
             # Calculate spending by user
@@ -664,7 +668,7 @@ class CursorDashboard:
                     title="Top 10 Spenders",
                     labels={'cost_dollars': 'Spending ($)', 'userEmail': 'User'}
                 )
-                fig_spenders.update_xaxis(tickangle=45)
+                fig_spenders.update_layout(xaxis_tickangle=45)
                 st.plotly_chart(fig_spenders, use_container_width=True)
             
             with col2:
@@ -705,44 +709,91 @@ class CursorDashboard:
     
     def render_model_usage_analysis(self):
         """Render model usage analytics"""
+        st.markdown("---")
         st.header("🤖 Model Usage Analytics")
         
-        if 'daily_usage_df' in st.session_state and not st.session_state.daily_usage_df.empty:
+        # Check if daily usage data is available and not None
+        if 'daily_usage_df' in st.session_state and st.session_state.daily_usage_df is not None and not st.session_state.daily_usage_df.empty:
             daily_df = st.session_state.daily_usage_df
             
             # Model popularity from daily usage
-            model_popularity = daily_df['primary_model'].value_counts()
+            model_popularity = daily_df['primary_model'].value_counts().reset_index()
+            model_popularity.columns = ['model', 'usage_count']
+            model_popularity = model_popularity.sort_values('usage_count', ascending=False)
+            
+            # Display Model Rankings Table
+            st.subheader("🏆 Model Usage Rankings (Highest to Lowest)")
+            
+            # Add rank numbers
+            model_popularity['rank'] = range(1, len(model_popularity) + 1)
+            model_popularity['percentage'] = (model_popularity['usage_count'] / model_popularity['usage_count'].sum() * 100).round(2)
+            
+            # Display the rankings table
+            rankings_display = model_popularity[['rank', 'model', 'usage_count', 'percentage']].copy()
+            rankings_display.columns = ['Rank', 'Model', 'Usage Count', 'Percentage (%)']
+            st.dataframe(rankings_display, use_container_width=True, hide_index=True)
             
             col1, col2 = st.columns(2)
             
             with col1:
-                # Model popularity pie chart
+                # Model popularity bar chart (sorted highest to lowest)
                 if not model_popularity.empty:
-                    fig_models = px.pie(
-                        values=model_popularity.values,
-                        names=model_popularity.index,
-                        title="Model Popularity (Daily Usage)"
+                    fig_models = px.bar(
+                        model_popularity,
+                        x='model',
+                        y='usage_count',
+                        title="Model Usage (Highest to Lowest)",
+                        color='usage_count',
+                        color_continuous_scale='Viridis',
+                        text='usage_count'
                     )
+                    fig_models.update_layout(xaxis_tickangle=45)
+                    fig_models.update_traces(texttemplate='%{text}', textposition='outside')
                     st.plotly_chart(fig_models, use_container_width=True)
             
             with col2:
-                # Model usage by user
-                user_models = daily_df.groupby(['email', 'primary_model']).size().reset_index(name='days_used')
-                top_user_models = user_models.groupby('email')['days_used'].sum().reset_index().sort_values('days_used', ascending=False).head(10)
+                # Model popularity pie chart
+                if not model_popularity.empty:
+                    fig_pie = px.pie(
+                        model_popularity,
+                        values='usage_count',
+                        names='model',
+                        title="Model Distribution"
+                    )
+                    st.plotly_chart(fig_pie, use_container_width=True)
+            
+            # Top model users analysis
+            st.subheader("👥 Top Users by Model Usage")
+            user_models = daily_df.groupby(['email', 'primary_model']).size().reset_index(name='days_used')
+            top_user_models = user_models.groupby('email')['days_used'].sum().reset_index().sort_values('days_used', ascending=False).head(10)
+            
+            if not top_user_models.empty:
+                # Extract real names from emails
+                top_user_models['name'] = top_user_models['email'].apply(lambda x: x.split('@')[0].replace('.', ' ').title())
                 
-                if not top_user_models.empty:
+                col1, col2 = st.columns(2)
+                
+                with col1:
                     fig_user_models = px.bar(
                         top_user_models,
-                        x='email',
+                        x='name',
                         y='days_used',
-                        title="Top Users by Model Usage Days",
-                        labels={'days_used': 'Days Used', 'email': 'User'}
+                        title="Top 10 Users by Model Usage Days",
+                        color='days_used',
+                        color_continuous_scale='Blues',
+                        labels={'days_used': 'Days Used', 'name': 'User'}
                     )
-                    fig_user_models.update_xaxis(tickangle=45)
+                    fig_user_models.update_layout(xaxis_tickangle=45)
                     st.plotly_chart(fig_user_models, use_container_width=True)
+                
+                with col2:
+                    # Display table of top users
+                    top_display = top_user_models[['name', 'email', 'days_used']].copy()
+                    top_display.columns = ['Name', 'Email', 'Days Used']
+                    st.dataframe(top_display, use_container_width=True, hide_index=True)
         
         # Detailed model analysis from usage events
-        if 'usage_events_df' in st.session_state and not st.session_state.usage_events_df.empty:
+        if 'usage_events_df' in st.session_state and st.session_state.usage_events_df is not None and not st.session_state.usage_events_df.empty:
             events_df = st.session_state.usage_events_df
             
             st.subheader("🔍 Detailed Model Analysis")
@@ -781,6 +832,283 @@ class CursorDashboard:
                     use_container_width=True
                 )
     
+    def render_comprehensive_top_users(self):
+        """Render comprehensive top users analysis with spending and token information"""
+        st.markdown("---")
+        st.header("🏆 Comprehensive Top Users Analysis")
+        
+        # Get data from session state
+        users_df = st.session_state.get('users_data')
+        usage_df = st.session_state.get('usage_data')
+        
+        if users_df is not None and usage_df is not None and not users_df.empty and not usage_df.empty:
+            # Merge users and usage data
+            try:
+                merged_df = pd.merge(users_df, usage_df, left_on='id', right_on='user_id', how='inner')
+                
+                # Calculate spending if usage events data is available
+                spending_data = None
+                if 'usage_events_df' in st.session_state and st.session_state.usage_events_df is not None:
+                    events_df = st.session_state.usage_events_df
+                    spending_data = events_df.groupby('userEmail').agg({
+                        'cost_cents': 'sum',
+                        'input_tokens': 'sum',
+                        'output_tokens': 'sum',
+                        'model_used': 'count'
+                    }).reset_index()
+                    spending_data['cost_dollars'] = spending_data['cost_cents'] / 100
+                    spending_data['event_tokens'] = spending_data['input_tokens'] + spending_data['output_tokens']
+                
+                # Sort by total requests to get top users
+                top_users = merged_df.nlargest(20, 'total_requests')
+                
+                # Merge with spending data if available
+                if spending_data is not None:
+                    top_users = pd.merge(top_users, spending_data, left_on='email', right_on='userEmail', how='left')
+                    top_users['cost_dollars'] = top_users['cost_dollars'].fillna(0)
+                    top_users['event_tokens'] = top_users['event_tokens'].fillna(0)
+                    
+                    # Create comprehensive table
+                    display_cols = ['name', 'email', 'total_requests', 'total_tokens', 'total_sessions', 'cost_dollars', 'event_tokens']
+                    display_names = ['Name', 'Email', 'Requests', 'Usage Tokens', 'Sessions', 'Spending ($)', 'Event Tokens']
+                else:
+                    # Without spending data
+                    display_cols = ['name', 'email', 'total_requests', 'total_tokens', 'total_sessions']
+                    display_names = ['Name', 'Email', 'Requests', 'Tokens', 'Sessions']
+                
+                # Display the comprehensive table
+                st.subheader("🔥 Top Users Overview")
+                display_df = top_users[display_cols].copy()
+                display_df.columns = display_names
+                st.dataframe(display_df, use_container_width=True)
+                
+                # Charts section
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.subheader("📊 Top Users by Requests")
+                    fig_requests = px.bar(
+                        top_users.head(10),
+                        x='name',
+                        y='total_requests',
+                        title="Top 10 Users by Total Requests",
+                        color='total_requests',
+                        color_continuous_scale='Viridis'
+                    )
+                    fig_requests.update_layout(xaxis_tickangle=45)
+                    st.plotly_chart(fig_requests, use_container_width=True)
+                
+                with col2:
+                    if spending_data is not None:
+                        st.subheader("💰 Top Spenders")
+                        top_spenders = top_users[top_users['cost_dollars'] > 0].nlargest(10, 'cost_dollars')
+                        if not top_spenders.empty:
+                            fig_spending = px.bar(
+                                top_spenders,
+                                x='name',
+                                y='cost_dollars',
+                                title="Top 10 Users by Spending",
+                                color='cost_dollars',
+                                color_continuous_scale='Reds'
+                            )
+                            fig_spending.update_layout(xaxis_tickangle=45)
+                            st.plotly_chart(fig_spending, use_container_width=True)
+                        else:
+                            st.info("No spending data available for users")
+                    else:
+                        st.subheader("🎯 Top Users by Tokens")
+                        fig_tokens = px.bar(
+                            top_users.head(10),
+                            x='name',
+                            y='total_tokens',
+                            title="Top 10 Users by Total Tokens",
+                            color='total_tokens',
+                            color_continuous_scale='Blues'
+                        )
+                        fig_tokens.update_layout(xaxis_tickangle=45)
+                        st.plotly_chart(fig_tokens, use_container_width=True)
+                
+                # Summary metrics
+                st.subheader("📈 Summary Statistics")
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric(
+                        "Top User Requests", 
+                        f"{top_users['total_requests'].max():,}",
+                        f"Average: {top_users['total_requests'].mean():.0f}"
+                    )
+                
+                with col2:
+                    st.metric(
+                        "Top User Tokens", 
+                        f"{top_users['total_tokens'].max():,}",
+                        f"Average: {top_users['total_tokens'].mean():.0f}"
+                    )
+                
+                with col3:
+                    if spending_data is not None:
+                        max_spending = top_users['cost_dollars'].max()
+                        avg_spending = top_users['cost_dollars'].mean()
+                        st.metric(
+                            "Highest Spender", 
+                            f"${max_spending:.2f}",
+                            f"Average: ${avg_spending:.2f}"
+                        )
+                    else:
+                        st.metric(
+                            "Top Sessions", 
+                            f"{top_users['total_sessions'].max():,}",
+                            f"Average: {top_users['total_sessions'].mean():.0f}"
+                        )
+                
+                with col4:
+                    st.metric(
+                        "Active Users", 
+                        len(top_users[top_users['total_requests'] > 0]),
+                        f"out of {len(top_users)}"
+                    )
+                
+            except Exception as e:
+                st.error(f"Error creating comprehensive top users analysis: {e}")
+                logger.error(f"Comprehensive top users error: {e}")
+        else:
+            st.info("Please refresh data to see comprehensive top users analysis")
+
+    def render_least_used_users(self):
+        """Render least used users analysis"""
+        st.markdown("---")
+        st.header("📉 Least Used Users Analysis")
+        
+        # Get data from session state
+        users_df = st.session_state.get('users_data')
+        usage_df = st.session_state.get('usage_data')
+        
+        if users_df is not None and usage_df is not None and not users_df.empty and not usage_df.empty:
+            try:
+                # Merge users and usage data
+                merged_df = pd.merge(users_df, usage_df, left_on='id', right_on='user_id', how='inner')
+                
+                # Get least used users (bottom 10 by total requests)
+                least_used = merged_df.nsmallest(10, 'total_requests')
+                
+                # Calculate spending if usage events data is available
+                spending_data = None
+                if 'usage_events_df' in st.session_state and st.session_state.usage_events_df is not None:
+                    events_df = st.session_state.usage_events_df
+                    spending_data = events_df.groupby('userEmail').agg({
+                        'cost_cents': 'sum',
+                        'input_tokens': 'sum',
+                        'output_tokens': 'sum',
+                        'model_used': 'count'
+                    }).reset_index()
+                    spending_data['cost_dollars'] = spending_data['cost_cents'] / 100
+                    spending_data['event_tokens'] = spending_data['input_tokens'] + spending_data['output_tokens']
+                    
+                    # Merge with spending data
+                    least_used = pd.merge(least_used, spending_data, left_on='email', right_on='userEmail', how='left')
+                    least_used['cost_dollars'] = least_used['cost_dollars'].fillna(0)
+                    least_used['event_tokens'] = least_used['event_tokens'].fillna(0)
+                    
+                    display_cols = ['name', 'email', 'total_requests', 'total_tokens', 'total_sessions', 'cost_dollars', 'event_tokens']
+                    display_names = ['Name', 'Email', 'Requests', 'Usage Tokens', 'Sessions', 'Spending ($)', 'Event Tokens']
+                else:
+                    display_cols = ['name', 'email', 'total_requests', 'total_tokens', 'total_sessions']
+                    display_names = ['Name', 'Email', 'Requests', 'Tokens', 'Sessions']
+                
+                # Display the least used users table
+                st.subheader("🔻 Top 10 Least Used Users")
+                display_df = least_used[display_cols].copy()
+                display_df.columns = display_names
+                st.dataframe(display_df, use_container_width=True)
+                
+                # Charts section
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.subheader("📊 Least Active Users by Requests")
+                    fig_requests = px.bar(
+                        least_used,
+                        x='name',
+                        y='total_requests',
+                        title="10 Least Active Users by Total Requests",
+                        color='total_requests',
+                        color_continuous_scale='Reds'
+                    )
+                    fig_requests.update_layout(xaxis_tickangle=45)
+                    st.plotly_chart(fig_requests, use_container_width=True)
+                
+                with col2:
+                    st.subheader("🎯 Least Active Users by Tokens")
+                    fig_tokens = px.bar(
+                        least_used,
+                        x='name',
+                        y='total_tokens',
+                        title="10 Least Active Users by Total Tokens",
+                        color='total_tokens',
+                        color_continuous_scale='Oranges'
+                    )
+                    fig_tokens.update_layout(xaxis_tickangle=45)
+                    st.plotly_chart(fig_tokens, use_container_width=True)
+                
+                # Summary for least used users
+                st.subheader("📈 Least Used Users Statistics")
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric(
+                        "Lowest User Requests", 
+                        f"{least_used['total_requests'].min():,}",
+                        f"Average: {least_used['total_requests'].mean():.0f}"
+                    )
+                
+                with col2:
+                    st.metric(
+                        "Lowest User Tokens", 
+                        f"{least_used['total_tokens'].min():,}",
+                        f"Average: {least_used['total_tokens'].mean():.0f}"
+                    )
+                
+                with col3:
+                    inactive_users = len(least_used[least_used['total_requests'] == 0])
+                    st.metric(
+                        "Completely Inactive", 
+                        inactive_users,
+                        f"out of {len(least_used)}"
+                    )
+                
+                with col4:
+                    if spending_data is not None:
+                        zero_spend = len(least_used[least_used['cost_dollars'] == 0])
+                        st.metric(
+                            "Zero Spending", 
+                            zero_spend,
+                            f"out of {len(least_used)}"
+                        )
+                    else:
+                        st.metric(
+                            "Lowest Sessions", 
+                            f"{least_used['total_sessions'].min():,}",
+                            f"Average: {least_used['total_sessions'].mean():.0f}"
+                        )
+                
+                # Recommendations for least used users
+                st.subheader("💡 Recommendations for Low Usage")
+                st.info("""
+                **Strategies to increase engagement for least used users:**
+                - Send onboarding tutorials and best practices
+                - Highlight underutilized features through demos
+                - Provide personalized training sessions
+                - Check if users need different access permissions
+                - Identify potential churners and implement retention strategies
+                """)
+                
+            except Exception as e:
+                st.error(f"Error creating least used users analysis: {e}")
+                logger.error(f"Least used users error: {e}")
+        else:
+            st.info("Please refresh data to see least used users analysis")
+    
     def export_data(self):
         """Handle data export functionality"""
         if not st.session_state.data_loaded:
@@ -814,7 +1142,7 @@ class CursorDashboard:
     
     def run(self):
         """Main application loop"""
-        st.title("📊 Cursor Admin Dashboard")
+        st.title("📊 Amagi Cursor AI Dashboard")
         st.markdown("Monitor and analyze Cursor usage across your organization")
         
         # Validate configuration
@@ -895,6 +1223,12 @@ class CursorDashboard:
         st.markdown("---")
         st.header("👥 User Analysis")
         self.render_user_segmentation(usage_df)
+
+        # Comprehensive Top Users Analysis
+        self.render_comprehensive_top_users()
+
+        # Least Used Users Analysis
+        self.render_least_used_users()
 
         # Premium Requests Analysis
         self.render_premium_requests_analysis()
