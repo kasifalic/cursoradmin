@@ -199,7 +199,7 @@ export default function Home() {
   }
 
   if (!mounted) {
-  return (
+    return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950 grid place-items-center transition-colors duration-300">
         <div className="flex items-center space-x-2">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
