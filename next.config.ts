@@ -35,7 +35,6 @@ const nextConfig: NextConfig = {
   // Environment validation and runtime exposure
   env: {
     CURSOR_ADMIN_API_KEY: process.env.CURSOR_ADMIN_API_KEY,
-    NODE_ENV: process.env.NODE_ENV,
   },
 
   // Bundle analyzer support
