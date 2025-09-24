@@ -5,19 +5,26 @@
 // Validate required environment variables
 export function validateEnvironment() {
   const requiredEnvVars = ['CURSOR_ADMIN_API_KEY'];
-  const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
+  
+  // Special handling for AWS Amplify where env vars exist but aren't enumerable
+  const apiKey = process.env.CURSOR_ADMIN_API_KEY;
   
   // Debug logging for AWS Amplify
   console.log('Environment validation:', {
     NODE_ENV: process.env.NODE_ENV,
-    CURSOR_ADMIN_API_KEY_EXISTS: !!process.env.CURSOR_ADMIN_API_KEY,
-    CURSOR_ADMIN_API_KEY_LENGTH: process.env.CURSOR_ADMIN_API_KEY?.length || 0,
+    CURSOR_ADMIN_API_KEY_EXISTS: !!apiKey,
+    CURSOR_ADMIN_API_KEY_LENGTH: apiKey?.length || 0,
+    CURSOR_ADMIN_API_KEY_PREVIEW: apiKey?.substring(0, 10) + '...',
     ALL_ENV_KEYS: Object.keys(process.env).filter(key => key.includes('CURSOR')),
+    DIRECT_ACCESS: !!process.env.CURSOR_ADMIN_API_KEY,
   });
   
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}. Available CURSOR env vars: ${Object.keys(process.env).filter(key => key.includes('CURSOR')).join(', ')}`);
+  // Check if the API key exists directly (works even if not enumerable)
+  if (!apiKey || apiKey.trim() === '') {
+    throw new Error(`Missing required environment variables: CURSOR_ADMIN_API_KEY. Direct access: ${!!process.env.CURSOR_ADMIN_API_KEY}`);
   }
+  
+  console.log('✅ Environment validation passed - API key is available');
 }
 
 // Type-safe environment access
