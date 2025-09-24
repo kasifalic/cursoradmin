@@ -32,9 +32,10 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Environment validation
+  // Environment validation and runtime exposure
   env: {
-    CUSTOM_KEY: process.env.CURSOR_ADMIN_API_KEY ? 'configured' : 'missing'
+    CURSOR_ADMIN_API_KEY: process.env.CURSOR_ADMIN_API_KEY,
+    NODE_ENV: process.env.NODE_ENV,
   },
 
   // Bundle analyzer support

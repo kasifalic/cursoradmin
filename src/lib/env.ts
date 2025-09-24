@@ -7,8 +7,16 @@ export function validateEnvironment() {
   const requiredEnvVars = ['CURSOR_ADMIN_API_KEY'];
   const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
   
+  // Debug logging for AWS Amplify
+  console.log('Environment validation:', {
+    NODE_ENV: process.env.NODE_ENV,
+    CURSOR_ADMIN_API_KEY_EXISTS: !!process.env.CURSOR_ADMIN_API_KEY,
+    CURSOR_ADMIN_API_KEY_LENGTH: process.env.CURSOR_ADMIN_API_KEY?.length || 0,
+    ALL_ENV_KEYS: Object.keys(process.env).filter(key => key.includes('CURSOR')),
+  });
+  
   if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}. Available CURSOR env vars: ${Object.keys(process.env).filter(key => key.includes('CURSOR')).join(', ')}`);
   }
 }
 

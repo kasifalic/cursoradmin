@@ -6,6 +6,8 @@ frontend:
         - npm ci
     build:
       commands:
+        - echo "CURSOR_ADMIN_API_KEY=$CURSOR_ADMIN_API_KEY" >> .env.local
+        - echo "NODE_ENV=production" >> .env.local
         - npm run build
   artifacts:
     baseDirectory: .next
@@ -15,7 +17,4 @@ frontend:
     paths:
       - node_modules/**/*
       - .next/cache/**/*
-  environmentVariables:
-    - CURSOR_ADMIN_API_KEY=cursor_04ec0590d197d6bfe2c93289a97aec043e56bbc32da3a5dcda2481d2c1a1231e
-    - NODE_ENV=production
 
