@@ -6,8 +6,13 @@ frontend:
         - npm ci
     build:
       commands:
-        - echo "CURSOR_ADMIN_API_KEY=$CURSOR_ADMIN_API_KEY" >> .env.local
+        - echo "Creating .env.local file..."
+        - echo "CURSOR_ADMIN_API_KEY=$CURSOR_ADMIN_API_KEY" > .env.local
         - echo "NODE_ENV=production" >> .env.local
+        - echo "Contents of .env.local:"
+        - cat .env.local
+        - echo "Available environment variables:"
+        - env | grep CURSOR || echo "No CURSOR environment variables found"
         - npm run build
   artifacts:
     baseDirectory: .next

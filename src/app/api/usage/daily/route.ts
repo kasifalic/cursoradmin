@@ -3,6 +3,14 @@ import { fetchDailyUsage, fetchUsageEvents, fetchTeamMembers } from "@/lib/curso
 
 export async function POST(req: NextRequest) {
   try {
+    // Debug: Log environment variables for troubleshooting
+    console.log('API Route - Environment Debug:', {
+      NODE_ENV: process.env.NODE_ENV,
+      CURSOR_ADMIN_API_KEY_EXISTS: !!process.env.CURSOR_ADMIN_API_KEY,
+      CURSOR_ADMIN_API_KEY_LENGTH: process.env.CURSOR_ADMIN_API_KEY?.length || 0,
+      ALL_ENV_KEYS: Object.keys(process.env).filter(key => key.includes('CURSOR')),
+    });
+
     const body = await req.json().catch(() => ({} as any));
     const startDateISO = body?.startDateISO ?? body?.startDate ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const endDateISO = body?.endDateISO ?? body?.endDate ?? new Date().toISOString();
@@ -24,7 +32,15 @@ export async function POST(req: NextRequest) {
     
     return NextResponse.json({ users }, { status: 200 });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
+    console.error('API Route Error:', err);
+    return NextResponse.json({ 
+      error: err?.message ?? "Unknown error",
+      debug: {
+        NODE_ENV: process.env.NODE_ENV,
+        CURSOR_ADMIN_API_KEY_EXISTS: !!process.env.CURSOR_ADMIN_API_KEY,
+        ENV_KEYS: Object.keys(process.env).filter(key => key.includes('CURSOR')),
+      }
+    }, { status: 500 });
   }
 }
 
